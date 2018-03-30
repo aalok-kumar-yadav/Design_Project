@@ -1,7 +1,7 @@
 # Design_Project
 
 Object detection and recognition for blind person and give message about what object is in front 
-distance 
+distance
 
 Before we proceed to taining and testing we have to install software dependacies
 
@@ -18,8 +18,7 @@ Tensorflow Object Detection API depends on the following libraries:
 *   Jupyter notebook
 *   Matplotlib
 *   Tensorflow
-*   Cython
-*   cocoapi
+
 
 For detailed steps to install Tensorflow, follow the [Tensorflow installation
 instructions](https://www.tensorflow.org/install/). A typical user can install
@@ -51,24 +50,6 @@ sudo pip install jupyter
 sudo pip install matplotlib
 ```
 
-## COCO API installation
-
-Download the
-<a href="https://github.com/cocodataset/cocoapi" target=_blank>cocoapi</a> and
-copy the pycocotools subfolder to the tensorflow/models/research directory if
-you are interested in using COCO evaluation metrics. The default metrics are
-based on those used in Pascal VOC evaluation. To use the COCO object detection
-metrics add `metrics_set: "coco_detection_metrics"` to the `eval_config` message
-in the config file. To use the COCO instance segmentation metrics add
-`metrics_set: "coco_mask_metrics"` to the `eval_config` message in the config
-file.
-
-```bash
-git clone https://github.com/cocodataset/cocoapi.git
-cd cocoapi/PythonAPI
-make
-cp -r pycocotools <path_to_tensorflow>/models/research/
-```
 
 ## Protobuf Compilation
 
@@ -110,6 +91,129 @@ python object_detection/builders/model_builder_test.py
 
 
 # Training of model
+
+01. Collect a few hundred images that contain your object - The bare minimum would be about 100, ideally more like 500+, but, the more images you have, the more tedious step 2 is...
+
+02. Annotate/label the images, ideally with a program. I personally used LabelImg. This process is basically drawing boxes around your object(s) in an image. The label program automatically will create an XML file that describes the object(s) in the pictures.
+
+02. Split this data into train/test samples
+04. Generate TF Records from these splits
+05. Setup a .config file for the model of choice (you could train your own from scratch, but we'll be using transfer learning)
+07. Train
+09. Export graph from new trained model
+10. Detect custom objects in real time!
+
+
+## install software for making xml file for images
+
+``` bash
+sudo apt-get install pyqt5-dev-tools
+```
+```bash
+sudo pip3 install lxml
+```
+```bash
+make qt5py3
+```
+```bash
+python3 labelImg.py
+```
+
+## Creating TFRecords
+
+Now we can run the generate_tfrecord.py script. We will run it twice, once for the train TFRecord and once for the test TFRecord.
+
+```bash
+python3 generate_tfrecord.py --csv_input=data/train_labels.csv --output_path=data/train.record
+```
+```bash
+python3 generate_tfrecord.py --csv_input=data/test_labels.csv --output_path=data/test.record
+```
+Now, in your data directory, you should have train.record and test.record.
+
+
+## Training custom object detector
+
+
+Download custom object detect [ssd_mobilenet_v1_coco](http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v1_coco_2017_11_17.tar.gz
+)
+
+
+In the configuration file, you need to search for all of the PATH_TO_BE_CONFIGURED points and change them. 
+You may also want to modify batch size. Currently, it is set to 24 in my configuration file. Other models 
+may have different batch sizes. If you get a memory error, you can try to decrease the batch size to get
+the model to fit in your VRAM. Finally, you also need to change the checkpoint name/path, num_classes to 1,
+num_examples to 12, and label_map_path: "training/object-detect.pbtxt"
+
+Inside training dir, add object-detection.pbtxt:
+
+```bash
+item {
+  id: 1
+  name: 'zebra_crossing'
+}
+```
+
+And now, the moment of truth! From within models/object_detection:
+
+
+```bash
+python3 train.py --logtostderr --train_dir=training/ --pipeline_config_path=training/ssd_mobilenet_v1_pets.config
+```
+
+From models/object_detection, via terminal, you start TensorBoard with:
+
+
+```bash
+tensorboard --logdir='training'
+```
+
+This runs on 127.0.0.1:6006 (visit in your browser)
+
+My total loss graph:
+
+
+![alt text](https://i.imgur.com/tQbovJp.png)
+
+
+To run this, you just need to pass in your checkpoint and your pipeline config, then wherever you want the inference graph to be placed. For example:
+
+```bash
+python3 export_inference_graph.py \
+    --input_type image_tensor \
+    --pipeline_config_path training/ssd_mobilenet_v1_pets.config \
+    --trained_checkpoint_prefix training/model.ckpt-10856 \
+    --output_directory mac_n_cheese_inference_graph
+```
+
+Your checkpoint files should be in the training directory. Just look for the one with the largest step (the largest number after the dash), and that's the one you want to use. Next, make sure the pipeline_config_path is set to whatever config file you chose, and then finally choose the name for the output directory, I went with mac_n_cheese_inference_graph
+
+Run the above command from models/object_detection
+
+If you get an error about no module named 'nets', then you need to re run:
+
+From tensorflow/models/
+
+```bash
+export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
+```
+
+Now, we're just going to use the sample notebook, edit it, and see how our model does on some testing images. I copied some of my models/object_detection/images/test images into the models/object_detection/test_images directory, and renamed them to be image3.jpg, image4.jpg...etc.
+
+Finally, in the Detection section, change the TEST_IMAGE_PATHS var to:
+
+```bash
+TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(3, 8) ]
+```
+
+And Result is look like:
+
+
+![alt text](https://i.imgur.com/jRpVkpT.png)
+
+
+And now you have successfully created a custom object detector model own custom object.
+
 
 
 
