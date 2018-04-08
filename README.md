@@ -1,9 +1,8 @@
 # Design_Project
 
-Object detection and recognition for blind person and give message about what object is in front 
-distance
+Object detection and recognition for blind person and give message about what object is and what 
+distance? Before we proceed to taining and testing we have to install software dependacies
 
-Before we proceed to taining and testing we have to install software dependacies
 
 
 ## Install Dependencies
@@ -21,8 +20,7 @@ Tensorflow Object Detection API depends on the following libraries:
 
 
 For detailed steps to install Tensorflow, follow the [Tensorflow installation
-instructions](https://www.tensorflow.org/install/). A typical user can install
-Tensorflow using one of the following commands:
+instructions](https://www.tensorflow.org/install/).
 
 ``` bash
 # For CPU
@@ -31,7 +29,7 @@ pip install tensorflow
 pip install tensorflow-gpu
 ```
 
-The remaining libraries can be installed on Ubuntu 16.04 using via apt-get:
+The remaining libraries can be installed on Ubuntu  using via apt-get:
 
 ``` bash
 sudo apt-get install protobuf-compiler python-pil python-lxml python-tk
@@ -40,15 +38,6 @@ sudo pip install jupyter
 sudo pip install matplotlib
 ```
 
-Alternatively, users can install dependencies using pip:
-
-``` bash
-sudo pip install Cython
-sudo pip install pillow
-sudo pip install lxml
-sudo pip install jupyter
-sudo pip install matplotlib
-```
 
 
 ## Protobuf Compilation
@@ -78,7 +67,7 @@ export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 
 Note: This command needs to run from every new terminal you start. If you wish
 to avoid running this manually, you can add it as a new line to the end of your
-~/.bashrc file.
+~/.bashrc file.2
 
 # Testing the Installation
 
@@ -92,14 +81,14 @@ python object_detection/builders/model_builder_test.py
 
 # Training of model
 
-01. Collect a few hundred images that contain your object - The bare minimum would be about 100, ideally more like 500+, but, the more images you have, the more tedious step 2 is...
+01. Collect a few hundred images that contain your object - The bare minimum would be about 200, ideally more like 500+, but, the more images you have, the more tedious step 2 is...
 
 02. Annotate/label the images, ideally with a program. I personally used LabelImg. This process is basically drawing boxes around your object(s) in an image. The label program automatically will create an XML file that describes the object(s) in the pictures.
 
-02. Split this data into train/test samples
+02. Split this data into train/test samples with 8:2 ratio.
 04. Generate TF Records from these splits
 05. Setup a .config file for the model of choice (you could train your own from scratch, but we'll be using transfer learning)
-07. Train
+07. Train the model
 09. Export graph from new trained model
 10. Detect custom objects in real time!
 
@@ -119,6 +108,7 @@ make qt5py3
 python3 labelImg.py
 ```
 
+
 ## Creating TFRecords
 
 Now we can run the generate_tfrecord.py script. We will run it twice, once for the train TFRecord and once for the test TFRecord.
@@ -130,6 +120,7 @@ python3 generate_tfrecord.py --csv_input=data/train_labels.csv --output_path=dat
 python3 generate_tfrecord.py --csv_input=data/test_labels.csv --output_path=data/test.record
 ```
 Now, in your data directory, you should have train.record and test.record.
+
 
 
 ## Training custom object detector
@@ -186,19 +177,27 @@ python3 export_inference_graph.py \
     --output_directory mac_n_cheese_inference_graph
 ```
 
-Your checkpoint files should be in the training directory. Just look for the one with the largest step (the largest number after the dash), and that's the one you want to use. Next, make sure the pipeline_config_path is set to whatever config file you chose, and then finally choose the name for the output directory, I went with mac_n_cheese_inference_graph
 
+Your checkpoint files should be in the training directory. Just look for the one with the largest step (the largest number after the dash), and that's the one you want to use. Next, make sure the pipeline_config_path is set to whatever config file you chose, and then finally choose the name for the output directory, I went with mac_n_cheese_inference_graph
+ 
+ 
 Run the above command from models/object_detection
+
 
 If you get an error about no module named 'nets', then you need to re run:
 
+
 From tensorflow/models/
+
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 ```
 
+
 Now, we're just going to use the sample notebook, edit it, and see how our model does on some testing images. I copied some of my models/object_detection/images/test images into the models/object_detection/test_images directory, and renamed them to be image3.jpg, image4.jpg...etc.
+
+
 
 Finally, in the Detection section, change the TEST_IMAGE_PATHS var to:
 
@@ -206,13 +205,14 @@ Finally, in the Detection section, change the TEST_IMAGE_PATHS var to:
 TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(i)) for i in range(3, 8) ]
 ```
 
+
 And Result is look like:
 
 
 ![alt text](https://i.imgur.com/jRpVkpT.png)
 
 
-And now you have successfully created a custom object detector model own custom object.
+And now you have successfully created a custom object detector model for own custom object.
 
 
 
