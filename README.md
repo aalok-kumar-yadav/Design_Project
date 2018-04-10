@@ -1,7 +1,14 @@
 # Design_Project
 
-Object detection and recognition for blind person and give message about what object is and what 
-distance? Before we proceed to taining and testing we have to install software dependacies
+## Description
+
+this project are determined to achieve a system which can render one of such application to benefit the blind
+people. In this project video detection and recognition is presented based on a single board computer represented
+by Raspberry PI as an embedded solution. The aim is to make a smart system which detects the object for the
+blind user, measures its distance , and report the output in the form of audio signals to alert the blind userof the obstacle ahead. This entire work is done on raspberry pi with Raspbian (Jessie) operating system
+
+
+before goining towards hardware we need to  make a own custom object detector using tensorflow  and proceed to taining and testing.
 
 
 
@@ -69,6 +76,7 @@ Note: This command needs to run from every new terminal you start. If you wish
 to avoid running this manually, you can add it as a new line to the end of your
 ~/.bashrc file.2
 
+
 # Testing the Installation
 
 You can test that you have correctly installed the Tensorflow Object Detection\
@@ -79,7 +87,7 @@ python object_detection/builders/model_builder_test.py
 ```
 
 
-# Training of model
+## Steps for training of model
 
 01. Collect a few hundred images that contain your object - The bare minimum would be about 200, ideally more like 500+, but, the more images you have, the more tedious step 2 is...
 
@@ -131,10 +139,11 @@ Download custom object detect [ssd_mobilenet_v1_coco](http://download.tensorflow
 
 
 In the configuration file, you need to search for all of the PATH_TO_BE_CONFIGURED points and change them. 
-You may also want to modify batch size. Currently, it is set to 24 in my configuration file. Other models 
+You may also want to modify batch size. Currently, it is set to 8 in my configuration file. Other models 
 may have different batch sizes. If you get a memory error, you can try to decrease the batch size to get
 the model to fit in your VRAM. Finally, you also need to change the checkpoint name/path, num_classes to 1,
 num_examples to 12, and label_map_path: "training/object-detect.pbtxt"
+
 
 Inside training dir, add object-detection.pbtxt:
 
@@ -169,6 +178,7 @@ My total loss graph:
 
 To run this, you just need to pass in your checkpoint and your pipeline config, then wherever you want the inference graph to be placed. For example:
 
+
 ```bash
 python3 export_inference_graph.py \
     --input_type image_tensor \
@@ -177,6 +187,7 @@ python3 export_inference_graph.py \
     --output_directory mac_n_cheese_inference_graph
 ```
 
+## Testing 
 
 Your checkpoint files should be in the training directory. Just look for the one with the largest step (the largest number after the dash), and that's the one you want to use. Next, make sure the pipeline_config_path is set to whatever config file you chose, and then finally choose the name for the output directory, I went with mac_n_cheese_inference_graph
  
@@ -206,13 +217,15 @@ TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'image{}.jpg'.format(
 ```
 
 
+## Result
 And Result is look like:
 
 
 ![alt text](https://i.imgur.com/jRpVkpT.png)
 
 
-And now you have successfully created a custom object detector model for own custom object.
+And now you have successfully created a custom object detector for own custom object and deploy this source code
+into raspberry pi.
 
 
 
